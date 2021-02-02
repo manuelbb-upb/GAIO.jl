@@ -84,7 +84,7 @@ function box2rect( box )
 end
 
 scene, layout = Makie.layoutscene();
-ax = layout[1,1] = LAxis(scene);
+ax = layout[1,1] = Axis(scene);
 for box ∈ box_collection
     Makie.mesh!(ax, box2rect(box)...; color=:blue, strokecolor=:lightblue, strokewidth = 5.0, shading=false)
 end
