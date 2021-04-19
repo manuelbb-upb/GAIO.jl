@@ -3,6 +3,8 @@ include("BoxTrees.jl")
 using .BoxTrees 
 bt = BoxTrees
 
+AbstractPlotting.inline!(true)
+
 f( x :: Vector{ R } where R<:Real ) = [
     1 - 1.2 * x[1]^2 + x[2]/5;
     5 * 0.2 * x[1]
@@ -40,6 +42,7 @@ function progress!( box_collection, f :: F where F<:Function )
                     break;
                 end
             end
+            # box was hit …
             if !intersection_empty
                 push!(good_box_indices, i);
                 break;
@@ -48,7 +51,7 @@ function progress!( box_collection, f :: F where F<:Function )
     end
     
     # TODO: Make more robust by reintroducing boxes
-    
+
     empty!( box_collection );
     push!( box_collection, new_collection[good_box_indices]... );    
 end
@@ -72,7 +75,7 @@ function box2rect( box )
 end
 
 scene, layout = Makie.layoutscene();
-ax = layout[1,1] = LAxis(scene);
+ax = layout[1,1] = Axis(scene);
 for box ∈ box_collection
     Makie.mesh!(ax, box2rect(box)...; color=:blue, strokecolor=:lightblue, strokewidth = 5.0, shading=false)
 end

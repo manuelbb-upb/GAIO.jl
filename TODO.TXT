@@ -1,0 +1,7 @@
+• search for box (at level) containing point in tree / OR not contained
+• insert: subdivide up to level; containing point 
+• tree modifying functions and box markers (flags)
+• delete boxes with specific flags 
+    • delete all boxes with level below X
+• (box intersect tree?)
+• save tree
