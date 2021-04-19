@@ -7,7 +7,7 @@ using Documenter
 DocMeta.setdocmeta!(GAIO, :DocTestSetup, :(using GAIO); recursive=true)
 
 makedocs(;
-    modules=[Morbit],
+    modules=[GAIO],
     authors="Manuel Berkemeier",
     repo="https://github.com/manuelbb-upb/GAIO.jl/blob/{commit}{path}#{line}",
     sitename="GAIO.jl",
