@@ -1,12 +1,12 @@
-module BoxTrees
+module GAIO
 
 using Parameters: @with_kw
 using Memoize: @memoize
 
-export Box, generate_sites!, eval!, subdivide!, init_box_tree,
+export BoxNode, generate_sites!, eval!, subdivide!, init_box_tree,
     results, sites, contains;
 export children, parent, Leaves;
-export ≺, point_not_dominated_by_box;
+export ≺ ;
 
 
 include("Trees.jl");

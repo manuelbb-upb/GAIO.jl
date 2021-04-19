@@ -1,0 +1,5 @@
+[deps]
+AbstractPlotting = "537997a7-5e4e-5d89-9595-2241ea00577e"
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+FromFile = "ff7dd447-1dcb-4ce3-b8ac-22a812192de7"
+GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"

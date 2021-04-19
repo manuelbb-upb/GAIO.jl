@@ -1,7 +1,15 @@
-using Pkg; Pkg.activate(@__DIR__);
-using Revise; # for development
-include("BoxTrees.jl")
-using .BoxTrees
+using Pkg;
+Pkg.activate(@__DIR__)
+using CairoMakie, AbstractPlotting;
+using GeometryBasics
+using FromFile
+#%%
+Pkg.activate(joinpath(@__DIR__, "..") )
+@from "../src/GAIO.jl" using GAIO 
+#%%
+
+lb = fill(-2.0,2)
+ub = fill(2.0,2)
 
 f( x :: Vector{ R } where R<:Real ) = [
     sum( ( x .- 1 ).^2 );
@@ -15,7 +23,7 @@ box_collection = [ root, ];
 function progress!( box_collection, f :: F where F<:Function )    
     
     # Subdivision Step
-    new_collection = Box[];
+    new_collection = BoxNode[];
     for box ∈ box_collection 
         subdivide!(box; method=:cycle)
         push!( new_collection, children(box)... )
@@ -72,20 +80,18 @@ end
 #%%
 # Plotting … 
 # should work in 3D and 2D
-using Makie;
-using GeometryBasics;
 
 function box2rect( box )
-    rect = Rect( Vec( BoxTrees.lb( box )... ), Vec( BoxTrees.width(box)... ) );
-    rect_v = decompose( Point{ BoxTrees.n_vars( box), Float64 }, rect )
+    rect = Rect( Vec( GAIO.lb( box )... ), Vec( GAIO.width(box)... ) );
+    rect_v = decompose( Point{ GAIO.n_vars( box), Float64 }, rect )
     rect_f = decompose( TriangleFace{Int}, rect );
     return rect_v, rect_f
 end
 
-scene, layout = Makie.layoutscene();
+scene, layout = layoutscene();
 ax = layout[1,1] = Axis(scene);
 for box ∈ box_collection
-    Makie.mesh!(ax, box2rect(box)...; color=:blue, strokecolor=:lightblue, strokewidth = 5.0, shading=false)
+    mesh!(ax, box2rect(box)...; color=:blue, strokecolor=:lightblue, strokewidth = 5.0, shading=false)
 end
 ax.aspect = AxisAspect(1)
 scene

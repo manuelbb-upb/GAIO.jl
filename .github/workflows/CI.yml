@@ -54,9 +54,9 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Documenter: DocMeta, doctest
-            using Morbit
-            DocMeta.setdocmeta!(Morbit, :DocTestSetup, :(using Morbit); recursive=true)
-            doctest(Morbit)'
+            using GAIO
+            DocMeta.setdocmeta!(GAIO, :DocTestSetup, :(using GAIO); recursive=true)
+            doctest(GAIO)'
       - run: julia --project=docs docs/make.jl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

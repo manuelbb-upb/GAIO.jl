@@ -1,10 +1,10 @@
 
-@with_kw struct Box <: Node
+@with_kw struct BoxNode <: Node
 	lb :: Vector{Float64}
 	ub :: Vector{Float64}
 	subdivision_level :: Int64 = 0
-	parent :: Union{Box, Nothing} = nothing
-	sub_boxes :: Vector{Box} = []
+	parent :: Union{BoxNode, Nothing} = nothing
+	sub_boxes :: Vector{BoxNode} = []
     
     # Test point data
 	database :: D where D<:SomeDataBase = DataBase()
@@ -15,28 +15,28 @@
 end
 
 # required Tree methods (see "Trees.jl")
-children( bn :: Box ) = bn.sub_boxes;
-parent( bn :: Box ) = bn.parent;
-depth( bn :: Box ) = bn.subdivision_level;
+children( bn :: BoxNode ) = bn.sub_boxes;
+parent( bn :: BoxNode ) = bn.parent;
+depth( bn :: BoxNode ) = bn.subdivision_level;
 
 # utilities
-lb( bn :: Box ) = bn.lb; # use methods for `lb` & `ub` …
-ub( bn :: Box ) = bn.ub; # … in case we would rather want to store center & radius
-n_vars( bn :: Box ) = length( bn.lb );
-width( bn :: Box ) = ub(bn) .- lb(bn); # maybe raname?
-center(bn :: Box ) = lb(bn) .+ .5 .* width( bn );
-edge_length( bn :: Box, dim :: Int) = ub(bn)[dim] - lb(bn)[dim];
+lb( bn :: BoxNode ) = bn.lb; # use methods for `lb` & `ub` …
+ub( bn :: BoxNode ) = bn.ub; # … in case we would rather want to store center & radius
+n_vars( bn :: BoxNode ) = length( bn.lb );
+width( bn :: BoxNode ) = ub(bn) .- lb(bn); # maybe raname?
+center(bn :: BoxNode ) = lb(bn) .+ .5 .* width( bn );
+edge_length( bn :: BoxNode, dim :: Int) = ub(bn)[dim] - lb(bn)[dim];
 
 @doc """
     contains(box, point)
 
 Return true if `point` lies in `box`.
 """
-function contains( bn :: Box, point :: Vector{R} where R<:Real)
+function contains( bn :: BoxNode, point :: Vector{R} where R<:Real)
     all( lb(bn) .<= point ) && all( point .<= ub(bn) )
 end
 
-function vertices( bn :: Box )
+function vertices( bn :: BoxNode )
     if isnothing( bn.hc )
         bn.hc = HyperCube{ n_vars(bn) }();
     end
@@ -48,7 +48,7 @@ function vertices( bn :: Box )
     ]
 end
 
-function edges( bn :: Box )
+function edges( bn :: BoxNode )
     verts = vertices( bn );
     return [
         [verts[ e[1] ], verts[ e[2] ]] for e in bn.hc.edges 
@@ -56,18 +56,18 @@ function edges( bn :: Box )
 end
 
 @doc "Retrieve sites indexed by `db_indices` from referenced DataBase `db`."
-function sites( bn :: Box )
+function sites( bn :: BoxNode )
     return sites( bn.database, bn.db_indices);
 end
 
 @doc "Retrieve evaluation results indexed by `db_indices` from referenced DataBase `db`."
-function results( bn :: Box; include_nothing = true )
+function results( bn :: BoxNode; include_nothing = true )
     return results( bn.database, bn.db_indices; include_nothing);
 end
 
 
 "Evaluate all sites referenced by field `db_indices`."
-function eval!( bn :: Box, f :: F where F<:Function; reevaluate = true)
+function eval!( bn :: BoxNode, f :: F where F<:Function; reevaluate = true)
     for db_id in bn.db_indices
         eval!( bn.database, f, db_id; reevaluate );
     end
@@ -84,7 +84,7 @@ function init_box_tree(
         lb :: Vector{R} where R<:Real, ub :: Vector{R} where R<:Real, 
         db :: Union{Nothing, DataBase} = nothing
     )
-    box_tree = Box(;
+    box_tree = BoxNode(;
         lb = lb,
 		ub = ub,
         database = isnothing(db) ? DataBase() : db,
@@ -102,18 +102,18 @@ Modifies `sub_boxes` field of `parent` and sets the parent reference
 of the new box correctly.
 """
 function add_sub_box!( 
-        parent :: Box, sub_lb :: Vector{Float64}, 
+        parent :: BoxNode, sub_lb :: Vector{Float64}, 
         sub_ub :: Vector{Float64} 
     )
 	# check if boundaries of sub-box lay within parent box
 	if all( lb(parent) .<= sub_lb ) && all( sub_ub .<= ub(parent) )
 		push!( parent.sub_boxes,
-			Box(;
+			BoxNode(;
 				lb = sub_lb,
 				ub = sub_ub, 
 				subdivision_level = parent.subdivision_level + 1,
 				parent = parent,
-				sub_boxes = Box[],
+				sub_boxes = BoxNode[],
                 database = parent.database,
                 hc = parent.hc,
 			)
@@ -128,7 +128,7 @@ end
 "Divide each of `bn`s edges by divisor or the entries of divisor 
 and add sub boxes as children to the tree."
 function subdivide!( 
-        bn :: Box, divisor :: Union{Int, Vector{Int}}, 
+        bn :: BoxNode, divisor :: Union{Int, Vector{Int}}, 
         LB :: Vector{Float64}, UB :: Vector{Float64};
     )
     
@@ -152,7 +152,7 @@ function subdivide!(
 end
 
 function subdivide!( 
-        bn :: Box;
+        bn :: BoxNode;
         method = :cycle
     )
     if method == :cycle 
@@ -170,17 +170,17 @@ end
 Recursively subdivide node `parent`.
 `parent` is divided by `divisor` along each box dimension.
 """
-function subdivide!( parent :: Box, divisor :: Union{Vector{Int}, Int} = 2)
+function subdivide!( parent :: BoxNode, divisor :: Union{Vector{Int}, Int} = 2)
 	lb = Float64[];
 	ub = Float64[];
 	subdivide!( parent, divisor, lb, ub )
 end
 
-function generate_sites!( bn :: Box; method ::Symbol = :edges_center, kwargs...  )
+function generate_sites!( bn :: BoxNode; method ::Symbol = :edges_center, kwargs...  )
     generate_sites!(bn , Val(method); kwargs...)
 end
 
-function generate_sites!( bn :: Box, ::Val{:edges_center}; num_edge_points = -1)
+function generate_sites!( bn :: BoxNode, ::Val{:edges_center}; num_edge_points = -1)
     if num_edge_points < 0
         num_edge_points = n_vars(bn)
     end

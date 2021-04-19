@@ -8,20 +8,16 @@ component of `X` that is strictly smaller than the corresponding
 `Y` component.
 """
 function ≺( X :: Vector{R} where R<:Real, Y :: Vector{R} where R<:Real )
-	any_smaller = false
     if length(X) != length(Y) 
         error("Cannot compare vectors of unequal lengths.")
     end
-    for (i, xᵢ) ∈ enumerate(X)
-        yᵢ = Y[i]
-        if yᵢ < xᵢ
+    
+    for i = eachindex(X)
+        if Y[i] < X[i]
             return false
         end
-        if !any_smaller
-            any_smaller = xᵢ < yᵢ;
-        end
     end
-    return any_smaller
+    return any( X .< Y )
 end
 #=
 @doc """ 
