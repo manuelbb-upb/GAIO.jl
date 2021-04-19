@@ -1,3 +1,8 @@
+name = "GAIO"
+uuid = "68056b7d-c50f-4036-9c0f-d42787523bf4"
+authors = ["manuelbb <manuelbb@mail.uni-paderborn.de> and contributors"]
+version = "0.0.1"
+
 [deps]
 Memoize = "c03570c3-d221-55d1-a50c-7939bbd78826"
 Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
