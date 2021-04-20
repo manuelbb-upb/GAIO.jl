@@ -6,3 +6,6 @@ version = "0.0.1"
 [deps]
 Memoize = "c03570c3-d221-55d1-a50c-7939bbd78826"
 Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
+
+[compat]
+Memoize = "0.4"
