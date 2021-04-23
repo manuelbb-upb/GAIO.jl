@@ -22,5 +22,5 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="https://github.com/manuelbb-upb/GAIO.jl",
+    repo="github.com/manuelbb-upb/GAIO.jl",
 )
