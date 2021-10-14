@@ -1,3 +1,8 @@
+# This file has an abstract interface for a Tree structure 
+# and some traversal iterators.
+# I wrote it for another project, but use it for the Finite-Difference Taylor models here.
+
+module Trees 
 
 abstract type Node end
 
@@ -49,14 +54,23 @@ PreOrderDFS( sn :: T ) where T = PreOrderDFS{T}( sn, nothing );
 
 Base.IteratorSize( ::PreOrderDFS{T} ) where T = Base.SizeUnknown();
 
+function _children_to_stack( node :: T ) where T
+    node_children = children( node )
+    if isnothing( node_children )
+        return T[]
+    else
+        return reverse(collect(node_children))
+    end
+end
+
 function Base.iterate( iter :: PreOrderDFS{T} ) where T
 	# in first iteration, collect all shildren as candidates to visit 
 	# `reverse` to imitate stack behavior
-	init_stack = reverse(collect(children( iter.start_node )));
+	init_stack = _children_to_stack( iter.start_node )
 	(iter.start_node, init_stack); 
 end
 
-function Base.iterate( iter :: PreOrderDFS{T}, stack :: Vector{T} ) where T
+function Base.iterate( iter :: PreOrderDFS{T}, stack :: AbstractVector ) where T
 	if isempty( stack )
 		return nothing
 	else
@@ -65,7 +79,7 @@ function Base.iterate( iter :: PreOrderDFS{T}, stack :: Vector{T} ) where T
 				isnothing( iter.traverse_subtree_filter ) || 
 				iter.traverse_subtree_filter(return_node) 
 			)
-			push!( stack, reverse(collect(children( return_node )))... );
+			push!( stack, _children_to_stack(return_node)... );
 		end
 		return (return_node, stack );
 	end
@@ -154,7 +168,9 @@ end
 Leaves( sn :: T ) where T = Leaves{T}( sn, PreOrderDFS( sn ) );
 
 # determine a `node` a leave it it has no children
-node_filter( :: Leaves, node ) = isnothing( iterate( children(node) ) ) 
+node_filter( :: Leaves, node ) = let childs = children(node);
+    return isnothing(childs) || isnothing( iterate( childs ) )
+end
 
 @doc """
 	DepthFilterNodes{T} <: PreOrderDFSSubIterator 
@@ -225,3 +241,4 @@ begin
 end
 =#
 
+end

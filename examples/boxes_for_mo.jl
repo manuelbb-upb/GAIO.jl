@@ -17,7 +17,7 @@ f( x :: Vector{ R } where R<:Real ) = [
 ]
 
 #%%
-root = init_box_tree(fill(-2.0, 2), fill(2.0,2));
+root = GAIO.init_box_tree(fill(-2.0, 2), fill(2.0,2));
 
 box_collection = [ root, ];
 function progress!( box_collection, f :: F where F<:Function )    

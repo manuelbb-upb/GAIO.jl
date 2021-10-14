@@ -3,14 +3,16 @@ module GAIO
 using Parameters: @with_kw
 using Memoize: @memoize
 
+import Combinatorics: combinations
+
+include("Trees.jl")
+import .Trees: Node
+
 export BoxNode, generate_sites!, eval!, subdivide!, init_box_tree,
     results, sites, contains;
+
 export children, parent, Leaves;
 export ≺ ;
-
-
-include("Trees.jl");
-include("HyperCube.jl");
 
 include("interfaces.jl");
 

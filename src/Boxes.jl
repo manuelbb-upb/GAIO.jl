@@ -10,8 +10,6 @@
 	database :: D where D<:SomeDataBase = DataBase()
     db_indices :: Vector{Int} = [];
     
-    # HyperCube for point&edge enumeration
-    hc :: Union{Nothing, HyperCube{N} where N} = nothing
 end
 
 # required Tree methods (see "Trees.jl")
@@ -37,22 +35,18 @@ function contains( bn :: BoxNode, point :: Vector{R} where R<:Real)
 end
 
 function vertices( bn :: BoxNode )
-    if isnothing( bn.hc )
-        bn.hc = HyperCube{ n_vars(bn) }();
-    end
     LB = lb(bn);
     UB = ub(bn);
-    return [
-        [ v[i] ? UB[i] : LB[i] for i = 1 : n_vars(bn) ] for 
-            v in bn.hc.vertices
+    
+    other_ind = combinations( eachindex(UB) )
+    return [ [LB,];
+        [ let v = copy(LB); v[ind] .= UB[ind]; v end for ind in other_ind ]                
     ]
 end
 
 function edges( bn :: BoxNode )
     verts = vertices( bn );
-    return [
-        [verts[ e[1] ], verts[ e[2] ]] for e in bn.hc.edges 
-    ]
+    return combinations( verts, 2 )
 end
 
 @doc "Retrieve sites indexed by `db_indices` from referenced DataBase `db`."
@@ -88,7 +82,6 @@ function init_box_tree(
         lb = lb,
 		ub = ub,
         database = isnothing(db) ? DataBase() : db,
-        hc = HyperCube{ length(lb) }(),
     );
 	return box_tree
 end
@@ -115,7 +108,6 @@ function add_sub_box!(
 				parent = parent,
 				sub_boxes = BoxNode[],
                 database = parent.database,
-                hc = parent.hc,
 			)
 		);
 	else
@@ -210,7 +202,9 @@ end
     steps = ( 2 .* ℓ .- 1 ) ./ (2*num_edge_points);
 
     # N * num_edges + 1
-    num_new_points = num_edge_points * ( 2^(n_vars - 1) *n_vars ) + 1;   
+    box_edges = edges(bn)
+    num_edges = length(edges(bn)) 
+    num_new_points = num_edge_points * num_edges + 1;   
 
     # pre-allocate site array
     new_points = Vector{Vector{Float64}}(undef, num_new_points);
@@ -218,7 +212,7 @@ end
     new_points[end] = center(bn);
 
     counter = 1;
-    for e ∈ edges( bn )
+    for e ∈ box_edges
         v1, v2 = e;
         for λ ∈ steps 
             new_points[counter] = λ .* v1 .+ (1-λ) .* v2;
